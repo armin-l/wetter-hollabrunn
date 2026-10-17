@@ -10,7 +10,7 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f7fafc;color:#1a202e;l
 h1{text-align:center;font-size:2em;margin-bottom:5px}
 #datum{text-align:center;color:#4a5568;margin-bottom:25px}
 .karten{display:flex;flex-wrap:wrap;gap:15px;justify-content:center}
-.karte{flex:1 1 140px;text-align:center;border-radius:12px;padding:20px 10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.karte{flex:1 1 140px;text-align:center;border-radius:12px;padding:20px 10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,.08)}
 .karte-titel{font-weight:bold;font-size:.85em;color:#718096;margin-bottom:8px}
 .karte-wert{font-size:2.5em;font-weight:bold}
 .einheit{font-size:.4em;vertical-align:super;color:#a0aec0}
@@ -41,7 +41,53 @@ footer{text-align:center;margin-top:30px;font-size:.8em;color:#a0aec0}
 
 <footer>Daten: Open-Meteo API · Stand: <span id="stand"></span></footer>
 
-<script type="application/javascript">(function(){var L='https://api.open-meteo.com/v1/forecast?latitude=48.32\&longitude=15.79\&current=temperature_2m%2Crelative_humidity_2m%2Cwind_speed_10m\&daily=temperature_2m_max%2Ctemperature_2m_min%2Csunrise%2Csunset%2Cprecipitation_sum%2Csunshine_duration%2Cwindspeed_10m_max\&timezone=Europe/Vienna\&forecast_days=7';fetch(L).then(function(r){return r.json()}).then(function(d){if(d.error){document.getElementById('datum').textContent='FEHLER: '+d.reason;document.getElementById('datum').className='error-msg';return}var c=d.current,n=new Date(),b='',i,mx,mn,so;d.datum.textContent=n.toLocaleDateString('de-DE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});document.getElementById('stand').textContent=n.toLocaleTimeString('de-AT');document.getElementById('temp-act').innerHTML=Math.round(c.temperature_2m)+'<span class="einheit">&deg;C</span>';document.getElementById('humid-act').textContent=c.relative_humidity_2m+'%RH';document.getElementById('wind-act').textContent=Math.round(c.wind_speed_10m)+' km/h';for(i=0;i<d.daily.time.length;i++){var dt=new Date(daily.time[i]+'T00:00'),tn=(i===0)?'Heute':dt.toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'short'}),mx=Math.round(daily.temperature_max[i]),mn=Math.round(daily.temperature_min[i]);if(daily.sunshine_duration&&d.daily.sunshine_duration[i])so=Math.round((d.daily.sunshine_duration[i]/3600)*10)/10;else so=null;b+='<tr><td class="tag-name">'+(i===0?'&#x1F534; ':'')+tn+'</td><td><span class="temp-bar">'+mn+'&deg;/ '+mx+'&deg;</span></td><td>'+d.daily.precipitation_sum[i]+' mm</td><td>'+(so!==null?so+' h':'&mdash;')+'</td></tr>'}document.getElementById('vorhersage').innerHTML=b})().catch(function(e){alert('Fehler beim Laden der Wetterdaten.')});})();();
+<script type="application/javascript">
+(function() {
+  var L = 'https://api.open-meteo.com/v1/forecast?latitude=48.32&longitude=15.79' +
+    '&current=temperature_2m%2Crelative_humidity_2m%2Cwind_speed_10m' +
+    '&daily=temperature_2m_max%2Ctemperature_2m_min%2Csunrise%2Csunset%2Cprecipitation_sum%2Csunshine_duration%2Cwindspeed_10m_max' +
+    '&timezone=Europe/Vienna&forecast_days=7';
+
+  fetch(L)
+    .then(function(r){ return r.json(); })
+    .then(function(d) {
+      if (d.error) {
+        document.getElementById('datum').textContent = 'FEHLER: ' + d.reason;
+        document.getElementById('datum').className = 'error-msg';
+        return;
+      }
+      var c = d.current, n = new Date(), b = '', i, mx, mn, so;
+
+      // Aktuelles Datum und Uhrzeit
+      document.getElementById('datum').textContent = n.toLocaleDateString('de-DE', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+      document.getElementById('stand').textContent = n.toLocaleTimeString('de-AT');
+
+      // Aktuelle Werte
+      document.getElementById('temp-act').innerHTML = Math.round(c.temperature_2m) + '<span class="einheit">&deg;C</span>';
+      document.getElementById('humid-act').textContent = c.relative_humidity_2m + '%RH';
+      document.getElementById('wind-act').textContent = Math.round(c.wind_speed_10m) + ' km/h';
+
+      // Vorhersagetabelle
+      for(i = 0; i < d.daily.time.length; i++) {
+        var dt = new Date(d.daily.time[i] + 'T00:00'),
+            tn = (i === 0) ? 'Heute' : dt.toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'short'}),
+            mx = Math.round(d.daily.temperature_2m_max[i]),
+            mn = Math.round(d.daily.temperature_2m_min[i]);
+        
+        var so = null;
+        if (d.daily.sunshine_duration && d.daily.sunshine_duration[i]) {
+          so = Math.round((d.daily.sunshine_duration[i]/3600)*10)/10;
+        }
+
+        b += '<tr><td class="tag-name">' + (i===0?'&#x1F534; ':'') + tn + '</td>' +
+              '<td><span class="temp-bar">'+mn+'&deg;/ '+mx+'&deg;</span></td>' +
+              '<td>'+d.daily.precipitation_sum[i]+' mm</td>' +
+              '<td>'+(so!==null?so+' h':'&mdash;')+'</td></tr>';
+      }
+      document.getElementById('vorhersage').innerHTML = b;
+    })
+    .catch(function(e){ alert('Fehler beim Laden der Wetterdaten.'); });
+})();
 </script>
 </body>
 </html>
