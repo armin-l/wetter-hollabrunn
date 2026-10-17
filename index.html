@@ -1,119 +1,47 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="utf-8" />
-    <title>Wetter Hollabrunn</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- E-Ink optimiert: grosser Kontrast, Serif Fonts, keine Animationen -->
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Georgia, 'Times New Roman', serif; background:#fff; color:#000; line-height:1.7; max-width:740px; margin:0 auto; padding:24px; }
-
-        h1 { text-align:center; font-size:2em; letter-spacing:2px; margin-bottom:4px; }
-        .untertitel { text-align:center; font-size:.95em; color:#333; margin-bottom:28px; }
-
-        /* Aktuelle Wetter-Karten */
-        .karten { display:flex; flex-wrap:wrap; gap:16px; justify-content:center; }
-        .karte { flex:1 1 130px; max-width:170px; text-align:center; border:2px solid #aaa; padding:16px 10px; background:#fafafa; }
-        .karte-titel { font-weight:bold; font-size:.85em; color:#444; margin-bottom:6px; }
-        .karte-wert { font-size:2.2em; font-weight:bold; white-space:nowrap; }
-        .einheit { font-size:.45em; vertical-align:super; color:#555; }
-
-        /* Vorhersage-Tabelle */
-        table { width:100%; border-collapse:collapse; margin-top:32px; }
-        th { background:#eee; padding:10px 8px; text-align:left; font-size:.9em; border-bottom:2px solid #999; }
-        td { padding:10px 8px; border-bottom:1px solid #ddd; font-size:1em; }
-        tr:last-child td { border-bottom:none; }
-        .tag-name { font-weight:bold; white-space:nowrap; min-width:8ch; }
-        .temp-balken { display:inline-block; min-width:5ch; }
-
-        footer { text-align:center; margin-top:36px; font-size:.8em; color:#888; }
-    </style>
+<meta charset="utf-8" />
+<title>Wetter Hollabrunn</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+* { margin:0;padding:0;box-sizing:border-box }
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f7fafc;color:#1a202e;line-height:1.6;max-width:900px;margin:0 auto;padding:20px}
+h1{text-align:center;font-size:2em;margin-bottom:5px}
+#datum{text-align:center;color:#4a5568;margin-bottom:25px}
+.karten{display:flex;flex-wrap:wrap;gap:15px;justify-content:center}
+.karte{flex:1 1 140px;text-align:center;border-radius:12px;padding:20px 10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.karte-titel{font-weight:bold;font-size:.85em;color:#718096;margin-bottom:8px}
+.karte-wert{font-size:2.5em;font-weight:bold}
+.einheit{font-size:.4em;vertical-align:super;color:#a0aec0}
+.tabelle{margin-top:30px;width:100%;border-collapse:collapse}
+.tabelle th{background:#edf2f7;padding:12px 10px;text-align:left;font-size:.85em;color:#4a5568;border-bottom:2px solid #cbd5e0}
+.tabelle td{padding:12px 10px;border-bottom:1px solid #e2e8f0;font-size:.95em}
+.tag-name{font-weight:bold;color:#2d3748}
+.temp-bar{color:#e53e3e;font-weight:bold}
+footer{text-align:center;margin-top:30px;font-size:.8em;color:#a0aec0}
+.error-msg{color:#e53e3e;text-align:center;padding:20px;font-weight:bold}
+.loading-text{text-align:center;color:#718096;padding:20px}
+</style>
 </head>
 <body>
-
 <h1>&#x26C1; Wetter Hollabrunn</h1>
-<p class="untertitel" id="datum">Lade Daten...</p>
+<p id="datum" class="loading-text">Lade Daten...</p>
 
-<div class="karten" id="aktuell"></div>
+<div class="karten" id="aktuell">
+    <div class="karte"><div class="karte-titel">&#x1F321;&#xFE0F; Temperatur</div><div class="karte-wert" id="temp-act"><span class="loading-text">--&deg;</span></div></div>
+    <div class="karte"><div class="karte-titel">&#x1F4A7; Luftfeuchte</div><div class="karte-wert" id="humid-act"><span class="loading-text">--%</span></div></div>
+    <div class="karte"><div class="karte-titel">&#x1F3B6; Wind</div><div class="karte-wert" id="wind-act"><span class="loading-text">-- km/h</span></div></div>
+</div>
 
-<table>
-    <thead><tr>
-        <th>Tag</th>
-        <th>T &deg;C</th>
-        <th>Niederschlag mm</th>
-        <th>Sonne h</th>
-    </tr></thead>
-    <tbody id="vorhersage"></tbody>
+<table class="tabelle">
+<thead><tr><th>Tag</th><th>T &deg;C</th><th>Niederschlag mm</th><th>Sonne h</th></tr></thead>
+<tbody id="vorhersage"></tbody>
 </table>
 
 <footer>Daten: Open-Meteo API · Stand: <span id="stand"></span></footer>
 
-<script type="application/javascript">(function(){
-    var LAT = 48.32, LON = 15.79;
-    var URL = 'https://api.open-meteo.com/v1/forecast' +
-        '?latitude=' + LAT + '&longitude=' + LON +
-        '&current=temperature_2m,relative_humidity_2m,wind_speed_10m' +
-        '&daily=temperature_max,temperature_min,sunrise,sunset,precipitation_sum,sunshine_duration' +
-        '&timezone=Europe%2FVienna&forecast_days=7';
-
-    function laden() {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', URL, true);
-        xhr.onload = function () {
-            if (xhr.status === 200) { anzeigen(JSON.parse(xhr.responseText)); }
-            else { document.getElementById('aktuell').innerHTML='<p style="padding:20px;">Fehler beim Laden.</p>'; }
-        };
-        xhr.onerror = function () { document.getElementById('aktuell').innerHTML='<p style="padding:20px;">Netzwerkfehler.</p>'; };
-        xhr.send();
-    }
-
-    function anzeigen(d){
-        var c=d.current, now=new Date(), tbody='', i, maxT, minT, sonneH;
-
-        // Datum und Uhrzeit
-        document.getElementById('datum').textContent = now.toLocaleDateString('de-DE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-        document.getElementById('stand').textContent = now.toLocaleTimeString('de-AT');
-
-        // Aktuelle Werte
-        document.getElementById('aktuell').innerHTML =
-            '<div class="karte">'
-                +'<div class="karte-titel">Temperatur</div>'
-                +'<div class="karte-wert">'+Math.round(c.temperature_2m)+'<span class="einheit">&deg;C</span></div>'
-            +'</div>'
-            +'<div class="karte">'
-                +'<div class="karte-titel">Luftfeuchte</div>'
-                +'<div class="karte-wert">'+c.relative_humidity_2m+'<span class="einheit">%RH</span></div>'
-            +'</div>'
-            +'<div class="karte">'
-                +'<div class="karte-titel">Wind</div>'
-                +'<div class="karte-wert">'+Math.round(c.wind_speed_10m)+'<span class="einheit">km/h</span></div>'
-            +'</div>';
-
-        // Tägliche Vorhersage
-        for(i=0;i<d.daily.time.length;i++) {
-            var datumStr = d.daily.time[i];
-            var dt = new Date(datumStr.split('-')[0], parseInt(datumStr.split('-')[1])-1, parseInt(datumStr.split('-')[2]));
-            var tagName = (i===0)?'Heute':dt.toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'short'});
-            maxT=Math.round(d.daily.temperature_max[i]);
-            minT=Math.round(d.daily.temperature_min[i]);
-            if(d.daily.sunshine_duration && d.daily.sunshine_duration[i]){
-                sonneH=Math.round((d.daily.sunshine_duration[i]/3600)*10)/10;
-            } else {
-                sonneH=null;
-            }
-            tbody+='<tr><td class="tag-name">'+tagName+'</td>'
-                +'<td><span class="temp-balken">'+minT+'&deg;/ '+maxT+'&deg;</span></td>'
-                +'<td>'+d.daily.precipitation_sum[i]+' mm</td>'
-                +'<td>'+(sonneH!==null?sonneH+' h':'&mdash;')+'</td>'
-                +'</tr>';
-        }
-        document.getElementById('vorhersage').innerHTML=tbody;
-    }
-
-    laden();
-})();
+<script type="application/javascript">(function(){var L='https://api.open-meteo.com/v1/forecast?latitude=48.32\&longitude=15.79\&current=temperature_2m%2Crelative_humidity_2m%2Cwind_speed_10m\&daily=temperature_max%2Ctemperature_min%2Csunrise%2Csunset%2Cprecipitation_sum%2Csunshine_duration\&timezone=Europe%2FVienna\&forecast_days=7';fetch(L).then(function(r){return r.json()}).then(function(d){if(d.error){document.getElementById('datum').textContent='FEHLER: '+d.reason;document.getElementById('datum').className='error-msg';return}var c=d.current,n=new Date(),b='',i,mx,mn,so;d.datum.textContent=n.toLocaleDateString('de-DE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});document.getElementById('stand').textContent=n.toLocaleTimeString('de-AT');document.getElementById('temp-act').innerHTML=Math.round(c.temperature_2m)+'<span class="einheit">&deg;C</span>';document.getElementById('humid-act').textContent=c.relative_humidity_2m+'%RH';document.getElementById('wind-act').textContent=Math.round(c.wind_speed_10m)+' km/h';for(i=0;i<d.daily.time.length;i++){var dt=new Date(daily.time[i]+'T00:00'),tn=(i===0)?'Heute':dt.toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'short'}),mx=Math.round(daily.temperature_max[i]),mn=Math.round(daily.temperature_min[i]);if(daily.sunshine_duration&&d.daily.sunshine_duration[i])so=Math.round((d.daily.sunshine_duration[i]/3600)*10)/10;else so=null;b+='<tr><td class="tag-name">'+(i===0?'&#x1F534; ':'')+tn+'</td><td><span class="temp-bar">'+mn+'&deg;/ '+mx+'&deg;</span></td><td>'+d.daily.precipitation_sum[i]+' mm</td><td>'+(so!==null?so+' h':'&mdash;')+'</td></tr>'}document.getElementById('vorhersage').innerHTML=b})().catch(function(e){alert('Fehler beim Laden der Wetterdaten.')});})();();
 </script>
-
 </body>
 </html>
