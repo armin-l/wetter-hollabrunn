@@ -91,7 +91,7 @@
             +'</div>';
 
         // Tägliche Vorhersage
-        for(i=0;i<d.daily.time.length;i++){
+        i=0;i<d.daily.time.length;i++){
             var datumStr = d.daily.time[i];
             var dt = new Date(datumStr.split('-')[0], parseInt(datumStr.split('-')[1])-1, parseInt(datumStr.split('-')[2]));
             var tagName = (i===0)?'Heute':dt.toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'short'});
