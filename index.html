@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wetter Hollabrunn – Lokale Zeit</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh; display: flex; align-items: center; justify-content: center; color: white;
+}
+.container { text-align: center; padding: 2rem; }
+h1 { font-size: 2rem; margin-bottom: .3rem; opacity: .9; }
+.subtitle { font-size: 1.1rem; opacity: .7; margin-bottom: 2rem; }
+canvas { display: block; margin: 0 auto; }
+.info-row { display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap; margin-top: 1rem; }
+.info-card { background: rgba(255,255,255,.15); backdrop-filter: blur(10px); border-radius: 12px; padding: 1rem 1.5rem; min-width: 160px; }
+.label { font-size: .8rem; text-transform: uppercase; letter-spacing: 1px; opacity: .7; margin-bottom: .3rem; }
+.value { font-size: 1.5rem; font-weight: bold; }
+.digital-time { font-size: 3rem; font-weight: 700; margin: 1rem 0; font-variant-numeric: tabular-nums; }
+.day-name { font-size: 2rem; font-weight: 700; margin-bottom: .5rem; }
+.year-day { font-size: 1rem; opacity: .7; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div id="dayname" class="day-name"></div>
+  <div id="yearDayNum" class="year-day"></div>
+  <div class="digital-time" id="digTime"></div>
+  <canvas id="clockCanvas" width="280" height="280"></canvas>
+  <div class="info-row">
+    <div class="info-card"><div class="label">Wochentag</div><div class="value" id="cardWeekday"></div></div>
+    <div class="info-card"><div class="label">Jahrestag</div><div class="value" style="font-size:.9rem;" id="cardYearDay">#_/_</div></div>
+    <div class="info-card"><div class="label">Ort</div><div class="value" style="font-size:1.1rem;">Hollabrunn AT</div></div>
+  </div>
+</div>
+
+<script>
+const TZ = 'Europe/Vienna';
+const WEEKDAYS_DE = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+const MONTHS_DE = ['Januar','Februar','Marz','April','Mai','Juni',
+                     'Juli','August','September','Oktober','November','Dezember'];
+
+function getHollabrunnTime() {
+  return new Date(new Date().toLocaleString('en-US',{timeZone:TZ}));
+}
+
+function dayOfYear(d) {
+  const start = new Date(Date.UTC(d.getFullYear(),0,1);
+  const oneDay=864e5;
+  return Math.floor((d-start)/oneDay)+1;
+}
+
+function drawClock(h,m,s) {
+  const c=document.getElementById('clockCanvas'), ctx=c.getContext('2d');
+  const cx=140,cy=140,r=120;
+  ctx.clearRect(0,0,280,280);
+
+  // Face bg
+  ctx.beginPath();ctx.arc(cx,cy,r-2,0,Math.PI*2);
+  ctx.fillStyle='rgba(255,255,255,.1)';ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.3)';ctx.lineWidth=2;ctx.stroke();
+
+  // Markers (hour + minute ticks)
+  for(let i=0;i<60;i++){
+    const a=(i/60)*Math.PI*2-Math.PI/2;
+    const isHour=i%5===0;
+    const outerR=isHour?r-12:r-7;
+    const innerR=r-20;
+    ctx.beginPath();
+    ctx.moveTo(cx+innerR*Math.cos(a),cy+innerR*Math.sin(a));
+    ctx.lineTo(cx+outerR*Math.cos(a),cy+outerR*Math.sin(a));
+    ctx.strokeStyle=isHour?'rgba(255,255,255,.9)':'rgba(255,255,255,.35)';
+    ctx.lineWidth=isHour?3:1.5;ctx.lineCap='round';ctx.stroke();
+  }
+
+  function hand(len,valFrac,rad,w){
+    const ang=valFrac*rad-Math.PI/2;
+    ctx.beginPath();
+    ctx.moveTo(cx-(w*.6)*Math.sin(ang), cy+(w*.6)*Math.cos(ang));
+    ctx.lineTo(cx+len*Math.cos(ang),cy+len*Math.sin(ang));
+    ctx.strokeStyle='#fff';ctx.lineWidth=w;ctx.lineCap='round';ctx.stroke();
+  }
+
+  hand(r*.48,h%12/12+m/60/12, Math.PI*2, 5);
+  hand(r*.72,m/60+s/3600,        Math.PI*2, 3);
+  hand(r*.85,s/60,                Math.PI*2, 1.5);
+
+  ctx.beginPath();ctx.arc(cx,cy,4,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
+}
+
+function update() {
+  const t=getHollabrunnTime();
+  let h=t.getHours(),m=t.getMinutes(),s=t.getSeconds();
+  document.getElementById('digTime').textContent = [h,m].map(v=>String(v).padStart(2,'0')).join(':');
+  drawClock(h,m,s);
+  document.getElementById('dayname').textContent=WEEKDAYS_DE[t.getDay()];
+  const yd=dayOfYear(t);
+  document.getElementById('yearDayNum').textContent=`Tag ${yd} von 365`;
+  document.getElementById('cardWeekday').textContent=WEEKDAYS_DE[t.getDay()];
+  document.getElementById('cardYearDay').textContent=yd+'/'+t.getFullYear();
+}
+
+update();setInterval(update,1000);
+</script>
+</body>
+</html>
