@@ -8,7 +8,9 @@
 * { margin:0;padding:0;box-sizing:border-box }
 body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f7fafc;color:#1a202e;line-height:1.6;max-width:900px;margin:0 auto;padding:20px}
 h1{text-align:center;font-size:2em;margin-bottom:5px}
-#datum{text-align:center;color:#4a5568;margin-bottom:25px}
+#datum{text-align:center;display:flex;justify-content:center;gap:15px;flex-wrap:wrap;margin-bottom:20px;}
+.datum-tag{background:#edf2f7;padding:8px 20px;border-radius:8px;font-weight:bold;font-size:1.1em;}
+.jahres-tag{color:#4a5568;font-size:.9em;display:flex;align-items:center;}
 .karten{display:flex;flex-wrap:wrap;gap:15px;justify-content:center}
 .karte{flex:1 1 140px;text-align:center;border-radius:12px;padding:20px 10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,.08)}
 .karte-titel{font-weight:bold;font-size:.85em;color:#718096;margin-bottom:8px}
@@ -19,14 +21,19 @@ h1{text-align:center;font-size:2em;margin-bottom:5px}
 .tabelle td{padding:12px 10px;border-bottom:1px solid #e2e8f0;font-size:.95em}
 .tag-name{font-weight:bold;color:#2d3748}
 .temp-bar{color:#e53e3e;font-weight:bold}
+.clock-row{text-align:center;margin:10px 0 20px;}
+clock canvas{display:block;margin:0 auto;}
 footer{text-align:center;margin-top:30px;font-size:.8em;color:#a0aec0}
 .error-msg{color:#e53e3e;text-align:center;padding:20px;font-weight:bold}
 .loading-text{text-align:center;color:#718096;padding:20px}
 </style>
 </head>
 <body>
-<h1>&#x26C1; Wetter Hollabrunn</h1>
-<p id="datum" class="loading-text">Lade Daten...</p>
+<h1>&#x26C1;&#xFE0F; Wetter Hollabrunn</h1>
+
+<div id="datum" class="loading-text">Lade Daten...</div>
+
+<canvas id="analogClock" width="220" height="220"></canvas>
 
 <div class="karten" id="aktuell">
     <div class="karte"><div class="karte-titel">&#x1F321;&#xFE0F; Temperatur</div><div class="karte-wert" id="temp-act"><span class="loading-text">--&deg;</span></div></div>
@@ -48,6 +55,94 @@ footer{text-align:center;margin-top:30px;font-size:.8em;color:#a0aec0}
     '&daily=temperature_2m_max%2Ctemperature_2m_min%2Csunrise%2Csunset%2Cprecipitation_sum%2Csunshine_duration%2Cwindspeed_10m_max' +
     '&timezone=Europe/Vienna&forecast_days=7';
 
+  // Wochentag auf Deutsch
+  function wochentag(date) {
+    return date.toLocaleDateString('de-DE', {weekday:'long'});
+  }
+
+  // Tag des Jahres berechnen (1-basiert)
+  function tagDesJahres(y, m, d) {
+    var start = new Date(y, 0, 1);
+    var target = new Date(y, m - 1, d);
+    return Math.ceil((target - start) / (1000*60*60*24)) + 1;
+  }
+
+  // --- Analoguhr zeichnen ---
+  function drawClock(hours, minutes, seconds) {
+    var canvas = document.getElementById('analogClock');
+    var ctx = canvas.getContext('2d');
+    var cx = canvas.width / 2, cy = canvas.height / 2;
+    var r = Math.min(cx,cy) - 10;
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    // Zifferblatt Hintergrund
+    ctx.beginPath();
+    ctx.arc(cx,cy,r+4,0,Math.PI*2);
+    ctx.fillStyle='#fff';ctx.fill();
+    ctx.lineWidth=3;ctx.strokeStyle='#cbd5e0';ctx.stroke();
+
+    // Stundenmarkierungen
+    for(var i=0;i<12;i++){
+      var angle=Math.PI/2-i*Math.PI/6;
+      var x1=cx+(r-8)*Math.cos(angle), y1=cy-(r-8)*Math.sin(angle);
+      var x2=cx+r*Math.cos(angle),   y2=cy-r*Math.sin(angle);
+      ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);
+      ctx.lineWidth=i%3===0?4:2;ctx.strokeStyle='#4a5568';ctx.stroke();
+    }
+
+    // Minutenstriche
+    for(i=0;i<60;i++){
+      if(i%5===0) continue;
+      angle=Math.PI/2-i*Math.PI/30;
+      x1=cx+(r-4)*Math.cos(angle); y1=cy-(r-4)*Math.sin(angle);
+      x2=cx+r*Math.cos(angle);     y2=cy-r*Math.sin(angle);
+      ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);
+      ctx.lineWidth=1;ctx.strokeStyle='#a0aec0';ctx.stroke();
+    }
+
+    // Zahlen (12,3,6,9)
+    ctx.font='bold 14px Segoe UI,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#718096';
+    ctx.fillText('12',cx,cy-r+18);
+    ctx.fillText('3' ,cx+r-16,cy);
+    ctx.fillText('6' ,cx,cy+r-16);
+    ctx.fillText('9' ,cx-r+16,cy);
+
+    function drawHand(val,total,size,color){
+      var a=Math.PI/2-val*(Math.PI*2)/total;
+      var len=size*r;
+      var hx=cx+len*Math.cos(a), hy=cy-len*Math.sin(a);
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(hx,hy);
+      ctx.lineWidth=color==='red'?3:4;ctx.lineCap='round';
+      ctx.strokeStyle=color||'#1a202e';ctx.stroke();
+    }
+
+    // Stundenzeiger
+    drawHand(hours%12 + minutes/60, 12, .5, '#1a202e');
+    // Minutenzeiger
+    drawHand(minutes, 60, .7, '#4a5568');
+    // Sekundenzeiger rot
+    drawHand(seconds, 60, .85, 'rgba(229,62,62,.7)');
+
+    // Mittelpunkt
+    ctx.beginPath();ctx.arc(cx,cy,5,0,Math.PI*2);
+    ctx.fillStyle='#edf2f7';ctx.fill();
+    ctx.lineWidth=2;ctx.strokeStyle='#cbd5e0';ctx.stroke();
+  }
+
+  // --- Uhr jede Sekunde updaten ---
+  function updateClock() {
+    var now = new Date();
+    // UTC nach Europe/Vienna konvertieren
+    var viennaStr = now.toLocaleString('en-US',{timeZone:'Europe/Vienna'});
+    var vDate = new Date(viennaStr);
+    var h=vDate.getHours(), m=vDate.getMinutes(), s=vDate.getSeconds();
+    
+    document.getElementById('stand').textContent = 
+        vDate.toLocaleDateString('de-DE')+' '+vDate.toLocaleTimeString('de-AT');
+    drawClock(h,m,s);
+  }
+
   fetch(L)
     .then(function(r){ return r.json(); })
     .then(function(d) {
@@ -58,16 +153,27 @@ footer{text-align:center;margin-top:30px;font-size:.8em;color:#a0aec0}
       }
       var c = d.current, n = new Date(), b = '', i, mx, mn, so;
 
-      // Aktuelles Datum und Uhrzeit
-      document.getElementById('datum').textContent = n.toLocaleDateString('de-DE', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
-      document.getElementById('stand').textContent = n.toLocaleTimeString('de-AT');
+      // Wochentag und Jahreszahl in Hollabrunn Zeit
+      var viennaNow = new Date(new Date().toLocaleString('en-US',{timeZone:'Europe/Vienna'}));
+      var wTag = wochentag(viennaNow);
+      
+      // Tag des heutigen Tages berechnen
+      var hoy = tagDesJahres(
+          viennaNow.getFullYear(),
+          viennaNow.getMonth() + 1,
+          viennaNow.getDate()
+      );
+      var jahrZahlSpan = '<span class="jahres-tag">Jahreszahl #'+hoy+'</span>';
+
+      document.getElementById('datum').innerHTML = 
+          '<div class="datum-row"><span class="tag-name">'+wTag+'</span>' + jahrZahlSpan + '</div>';
 
       // Aktuelle Werte
       document.getElementById('temp-act').innerHTML = Math.round(c.temperature_2m) + '<span class="einheit">&deg;C</span>';
       document.getElementById('humid-act').textContent = c.relative_humidity_2m + '%RH';
       document.getElementById('wind-act').textContent = Math.round(c.wind_speed_10m) + ' km/h';
 
-      // Vorhersagetabelle
+      // Vorhersagetabelle mit Wochentagen & Jahreszahlen
       for(i = 0; i < d.daily.time.length; i++) {
         var dt = new Date(d.daily.time[i] + 'T00:00'),
             tn = (i === 0) ? 'Heute' : dt.toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'short'}),
@@ -85,6 +191,10 @@ footer{text-align:center;margin-top:30px;font-size:.8em;color:#a0aec0}
               '<td>'+(so!==null?so+' h':'&mdash;')+'</td></tr>';
       }
       document.getElementById('vorhersage').innerHTML = b;
+
+      // Uhr initial zeichnen und jede Sekunde updaten
+      updateClock();
+      setInterval(updateClock, 1000);
     })
     .catch(function(e){ alert('Fehler beim Laden der Wetterdaten.'); });
 })();
