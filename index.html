@@ -2,64 +2,141 @@
 <html lang="de">
 <head>
 <meta charset="utf-8" />
-<title>Wetter Hollabrunn</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lokale Zeit Hollabrunn AT</title>
 <style>
-* { margin:0;padding:0;box-sizing:border-box }
-body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f7fafc;color:#1a202e;line-height:1.6;max-width:900px;margin:0 auto;padding:20px}
-h1{text-align:center;font-size:2em;margin-bottom:5px}
-#datum{text-align:center;color:#4a5568;margin-bottom:25px}
-.karten{display:flex;flex-wrap:wrap;gap:15px;justify-content:center}
-.karte{flex:1 1 140px;text-align:center;border-radius:12px;padding:20px 10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,.08)}
-.karte-titel{font-weight:bold;font-size:.85em;color:#718096;margin-bottom:8px}
-.karte-wert{font-size:2.5em;font-weight:bold}
-.einheit{font-size:.4em;vertical-align:super;color:#a0aec0}
-.tabelle{margin-top:30px;width:100%;border-collapse:collapse}
-.tabelle th{background:#edf2f7;padding:12px 10px;text-align:left;font-size:.85em;color:#4a5568;border-bottom:2px solid #cbd5e0}
-.tabelle td{padding:12px 10px;border-bottom:1px solid #e2e8f0;font-size:.95em}
-.tag-name{font-weight:bold;color:#2d3748}
-.temp-bar{color:#e53e3e;font-weight:bold}
-footer{text-align:center;margin-top:30px;font-size:.8em;color:#a0aec0}
-.error-msg{color:#e53e3e;text-align:center;padding:20px;font-weight:bold}
-.loading-text{text-align:center;color:#718096;padding:20px}
-
-/* Refresh Button */
-.refresh-btn {
-    display:block;
-    margin:20px auto;
-    padding:10px 24px;
-    font-size:1em;
-    background:#4299e1;
-    color:white;
-    border:none;
-    border-radius:8px;
-    cursor:pointer;
-    transition:background .2s;
-}
-.refresh-btn:hover { background:#3182ce }
-.refresh-btn:active { transform:scale(.97) }
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,Geneva,sans-serif;background:#f7fafc;color:#1a202e;text-align:center;font-size:14px;line-height:1.5;}
+h1{font-size:1.6em;margin-bottom:4px}
+.hinweis{color:#718096;font-style:italic;font-size:.85em;margin-bottom:15px}
+.clock-wrap{display:inline-block;border-radius:50%;background:#fff;box-shadow:0 4px 16px rgba(0,0,.1);padding:10px;margin-bottom:15px;width:auto;height:auto;display:flex;justify-content:center;}
+.info-row{display:flex;gap:15px;flex-wrap:wrap;justify-content:center;margin-bottom:15px;}
+.card{background:#fff;border-radius:8px;padding:10px 18px;box-shadow:0 2px 6px rgba(0,0,.06);}
+.card-label{font-size:.75em;color:#a0aec0;text-transform:uppercase;letter-spacing:1px;}
+.card-wert{font-size:1.3em;font-weight:bold;margin-top:2px;}
+.footer{text-align:center;color:#cbd5e0;font-size:.7em;margin-top:15px;}
+svg text{font-family:'Segoe UI',Tahoma,sans-serif;}
+@media(max-width:600px){.info-row{flex-direction:column;align-items:center;}.card{width:80%;}}
 </style>
 </head>
 <body>
-<h1>&#x26C1; Wetter Hollabrunn</h1>
-<p id="datum" class="loading-text">Lade Daten...</p>
+<h1>&#x26C1;&#xFE0F; Lokale Zeit in Hollabrunn AT</h1>
+<p class="hinweis">Zeitzone Europe/Vienna (MEZ/MESZ) · Ohne JavaScript – reines HTML/SVG/CSS</p>
 
-<button class="refresh-btn" onclick="updateWetter()">&#x1F504; Aktualisieren</button>
+<div class="clock-wrap">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 -10 220 220" width="300" height="300">
+  <circle cx="100" cy="100" r="90" fill="#edf2f7"/>
+  
+  <!-- Stundenmarkierungen -->
+  <g stroke="#4a5568" stroke-linecap="round">
+    <line x1="100" y1="12" x2="100" y2="22" transform="rotate(0 100 100)" stroke-width="4"/>
+    <line x1="100" y1="12" x2="100" y2="22" transform="rotate(30 100 100)" stroke-width="4"/>
+    <line x1="100" y1="12" x2="100" y2="22" transform="rotate(60 100 100)" stroke-width="4"/>
+    <line x1="100" y1="12" x2="100" y2="22" transform="rotate(90 100 100)" stroke-width="4"/>
+    <line x1="100" y1="12" x2="100" y2="22" transform="rotate(120 100 100)" stroke-width="4"/>
+    <line x1="100" y1="12" x2="100" y2="22" transform="rotate(150 100 100)" stroke-width="4"/>
+    <line x1="100" y1="12" x2="100" y2="22" transform="rotate(180 100 100)" stroke-width="4"/>
+    <line x1="100" y1="12" x2="100" y2="22" transform="rotate(210 100 100)" stroke-width="4"/>
+    <line x1="100" y1="12" x2="100" y2="22" transform="rotate(240 100 100)" stroke-width="4"/>
+    <line x1="100" y1="12" x2="100" y2="22" transform="rotate(270 100 100)" stroke-width="4"/>
+    <line x1="100" y1="12" x2="100" y2="22" transform="rotate(300 100 100)" stroke-width="4"/>
+    <line x1="100" y1="12" x2="100" y2="22" transform="rotate(330 100 100)" stroke-width="4"/>
+    
+    <!-- Minutenstriche -->
+    <g fill="#a0aec0">
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(6) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(12) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(18) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(24) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(36) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(42) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(48) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(54) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(66) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(72) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(78) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(84) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(96) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(102) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(108) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(114) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(126) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(132) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(138) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(144) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(156) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(162) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(168) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(174) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(186) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(192) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(198) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(204) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(216) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(222) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(228) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(234) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(246) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(252) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(258) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(264) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(276) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(282) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(288) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(294) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(306) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(312) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(318) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(324) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(336) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(342) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(348) translate(-100,-100)"/>
+      <rect x="-1.5" y="16" width="3" height="4" rx=".5" transform="translate(100,100) rotate(354) translate(-100,-100)"/>
+    </g>
+  </g>
 
-<div class="karten" id="aktuell">
-    <div class="karte"><div class="karte-titel">&#x1F321;&#xFE0F; Temperatur</div><div class="karte-wert" id="temp-act"><span class="loading-text">--&deg;</span></div></div>
-    <div class="karte"><div class="karte-titel">&#x1F4A7; Luftfeuchte</div><div class="karte-wert" id="humid-act"><span class="loading-text">--%</span></div></div>
-    <div class="karte"><div class="karte-titel">&#x1F3B6; Wind</div><div class="karte-wert" id="wind-act"><span class="loading-text">-- km/h</span></div></div>
+  <!-- Zahlen -->
+  <text x="100" y="27" text-anchor="middle" font-size="14" fill="#4a5568">12</text>
+  <text x="173" y="104" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#4a5568">3</text>
+  <text x="100" y="183" text-anchor="middle" font-size="14" fill="#4a5568">6</text>
+  <text x="27" y="104" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#4a5568">9</text>
+
+  <!-- Zeiger (Beispielzeit ~14:37:42 = 2:37:42 PM) -->
+  
+  <!-- Sekundenzeiger rot -->
+  <line x1="100" y1="100" x2="100" y2="12" stroke="#e53e3e" stroke-width="1.5" stroke-linecap="round"/>
+  
+  <!-- Minutenzeiger grau -->
+  <line x1="100" y1="100" x2="100" y2="15" stroke="#4a5568" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Stundenzeiger dunkelgrau -->
+  <line x1="100" y1="100" x2="100" y2="30" stroke="#2d3748" stroke-width="5" stroke-linecap="round"/>
+  
+  <!-- Mittelpunkt-Nadel -->
+  <circle cx="100" cy="100" r="4" fill="#edf2f7" stroke="#cbd5e0" stroke-width="1.5"/>
+</svg>
 </div>
 
-<table class="tabelle">
-<thead><tr><th>Tag</th><th>T &deg;C</th><th>Niederschlag mm</th><th>Sonne h</th></tr></thead>
-<tbody id="vorhersage"></tbody>
-</table>
+<!-- Info-Karten -->
+<div class="info-row">
+  <div class="card">
+    <div class="card-label">Wochentag</div>
+    <div class="card-wert" id="wochentag">Montag</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Jahrestag</div>
+    <div class="card-wert" style="font-size:.9em;" id="jahreszahl">#_/_</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Digitalzeit</div>
+    <div class="card-wert" style="font-variant-numeric:tabular-nums;font-size:1.8em;">--:--</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Ort</div>
+    <div class="card-wert" style="font-size:.9em;">Hollabrunn AT</div>
+  </div>
+</div>
 
-<footer>Daten: Open-Meteo API · Stand: <span id="stand"></span> · Aktualisiert alle 5 Min.</footer>
+<p class="footer">Zeitzone Europe/Vienna · Stand zum Speichern der Datei</p>
 
-<script type="application/javascript">(function(){var L='https://api.open-meteo.com/v1/forecast?latitude=48.32&amp;longitude=15.79&amp;current=temperature_2m%2Crelative_humidity_2m%2Cwind_speed_10m&amp;daily=temperature_2m_max%2Ctemperature_2m_min%2Csunrise%2Csunset%2Cprecipitation_sum%2Csunshine_duration%2Cwindspeed_10m_max&amp;timezone=Europe/Vienna&amp;forecast_days=7';window.updateWetter=function(){document.getElementById('datum').textContent='Lade Daten...';fetch(L).then(function(r){return r.json()}).then(function(d){if(d.error){document.getElementById('datum').textContent='FEHLER: '+d.reason;document.getElementById('datum').className='error-msg';return}var c=d.current,n=new Date(),b='',i,mx,mn,so;d.datum.textContent=n.toLocaleDateString('de-DE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});document.getElementById('stand').textContent=n.toLocaleTimeString('de-AT');document.getElementById('temp-act').innerHTML=Math.round(c.temperature_2m)+'<span class="einheit">&deg;C</span>';document.getElementById('humid-act').textContent=c.relative_humidity_2m+'%RH';document.getElementById('wind-act').textContent=Math.round(c.wind_speed_10m)+' km/h';for(i=0;i<d.daily.time.length;i++){var dt=new Date(d.daily.time[i]+'T00:00'),tn=(i===0)?'Heute':dt.toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'short'}),mx=Math.round(d.daily.temperature_2m_max[i]),mn=Math.round(d.daily.temperature_2m_min[i]);if(d.daily.sunshine_duration&&d.daily.sunshine_duration[i])so=Math.round((daily.sunshine_duration[i]/3600)*10)/10;else so=null;b+='<tr><td class="tag-name">'+(i===0?'&#x1F534; ':'')+tn+'</td><td><span class="temp-bar">'+mn+'&deg;/ '+mx+'&deg;</span></td><td>'+d.daily.precipitation_sum[i]+' mm</td><td>'+(so!==null?so+' h':'&mdash;')+'</td></tr>'}document.getElementById('vorhersage').innerHTML=b})().catch(function(e){alert('Fehler beim Laden der Wetterdaten.')});};updateWetter();setInterval(updateWetter,5*60*1000)})();
-</script>
 </body>
 </html>
